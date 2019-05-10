@@ -174,13 +174,14 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
         }
 
     }
-    
+
     @ReactMethod
-    public void saveCredentials(final String name, final String password, final Promise promise) {
+    public void saveCredentials(final String name, final String userIdentifier, final String password, final Promise promise) {
         this.sLPromise = promise;
         CredentialsClient mCredentialsClient;
         mCredentialsClient = Credentials.getClient(this.mContext);
-        Credential credential = new Credential.Builder(name)
+        Credential credential = new Credential.Builder(userIdentifier)
+                    .setName(name)
                     .setPassword(password)
                     .build();
         mCredentialsClient.save(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -194,7 +195,7 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                 Exception e = task.getException();
                 if (e instanceof ResolvableApiException) {
                     // Try to resolve the save request. This will prompt the user if
-                    // the credential is new.                     
+                    // the credential is new.
                     ResolvableApiException rae = (ResolvableApiException) e;
                     Activity activity = getCurrentActivity();
                     if (activity == null) {
@@ -209,7 +210,7 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                         sLPromise.reject("Failed to send Credentials intent.", "Failed to send Credentials intent.");
                     }
                 }else{
-                        Log.d("SmartLockModule", "Unsuccessful credential save.");      
+                        Log.d("SmartLockModule", "Unsuccessful credential save.");
                         sLPromise.reject("Unsuccessful credential save.", "Unsuccessful credential save.");
                 }
             }
