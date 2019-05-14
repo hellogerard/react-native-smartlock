@@ -12,9 +12,9 @@ smartLock.getCredentials = () => {
   });
 }
 
-smartLock.saveCredentials = (name, userIdentifier, password) => {
+smartLock.saveCredentials = (name, userIdentifier, password, profilePicture = null) => {
   return new Promise((resolve, reject) => {
-    SmartLockRN.saveCredentials(name, userIdentifier, password)
+    SmartLockRN.saveCredentials(name, userIdentifier, password, profilePicture)
       .then(() => resolve())
       .catch(err => reject(err));
   });

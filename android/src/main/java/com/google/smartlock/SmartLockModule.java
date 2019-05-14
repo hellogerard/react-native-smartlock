@@ -9,6 +9,7 @@ import android.content.IntentSender;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
+import android.net.Uri;
 
 import com.google.android.gms.auth.api.Auth;
 import com.facebook.react.bridge.ActivityEventListener;
@@ -176,14 +177,19 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void saveCredentials(final String name, final String userIdentifier, final String password, final Promise promise) {
+    public void saveCredentials(final String name, final String userIdentifier, final String password, final String profilePicture, final Promise promise) {
         this.sLPromise = promise;
         CredentialsClient mCredentialsClient;
         mCredentialsClient = Credentials.getClient(this.mContext);
-        Credential credential = new Credential.Builder(userIdentifier)
+        Credential.Builder credentialBuilder = new Credential.Builder(userIdentifier)
                     .setName(name)
-                    .setPassword(password)
-                    .build();
+                    .setPassword(password);
+
+        if (profilePicture != null) {
+            credentialBuilder.setProfilePictureUri(Uri.parse(profilePicture));
+        }
+
+        Credential credential = credentialBuilder.build();
         mCredentialsClient.save(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(Task<Void> task) {
