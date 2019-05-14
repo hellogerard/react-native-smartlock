@@ -87,6 +87,8 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                 }
             } else if (resultCode == CANCEL_CODE) {
                 sLPromise.reject("Login cancelled", "Login cancelled");
+            } else if (resultCode == 0) {
+                sLPromise.reject("Login cancelled", "Login cancelled");
             } else {
                 return;
             }
