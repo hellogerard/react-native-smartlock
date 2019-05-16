@@ -46,6 +46,7 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
     private static final int SUCCESS_CODE = -1;
     private static final int CANCEL_CODE = 1001;
     private static final int RC_SAVE = 1;
+    private static final int SIGN_IN_REQUIRED = 4;
 
 
     public SmartLockModule(ReactApplicationContext reactContext, Application application) {
@@ -104,7 +105,6 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
 
         CredentialRequest mCredentialRequest = new CredentialRequest.Builder()
                 .setPasswordLoginSupported(true)
-                .setAccountTypes(IdentityProviders.GOOGLE)
                 .build();
 
         System.out.println(mCredentialsClient.toString());
@@ -130,7 +130,14 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                                 sLPromise.reject("Activity is null", "Activity is null");
                                 return;
                             }
-                            resolveResult(rae, RC_READ, activity);
+
+                            ApiException ae = (ApiException) e;
+                            if (ae.getStatusCode() == SIGN_IN_REQUIRED) {
+                                sLPromise.reject("SmartLockModule", "The user must create an account or sign in manually.");
+                                return;
+                            }
+                            Log.e("SmartLockModule", "nao foi para o elseif", e);
+                            // resolveResult(rae, RC_READ, activity);
                         } else if (e instanceof ApiException) {
                             // The user must create an account or sign in manually.
                             Log.e("SmartLockModule", "Unsuccessful credential request.", e);
