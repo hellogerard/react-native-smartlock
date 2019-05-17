@@ -3,7 +3,6 @@ package com.google.smartlock.smartlockrn;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.support.annotation.NonNull;
@@ -11,7 +10,6 @@ import android.util.Log;
 import android.widget.Toast;
 import android.net.Uri;
 
-import com.google.android.gms.auth.api.Auth;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Promise;
@@ -23,14 +21,12 @@ import com.google.android.gms.auth.api.credentials.CredentialRequest;
 import com.google.android.gms.auth.api.credentials.CredentialRequestResponse;
 import com.google.android.gms.auth.api.credentials.Credentials;
 import com.google.android.gms.auth.api.credentials.CredentialsClient;
+import com.google.android.gms.auth.api.credentials.CredentialsOptions;
 import com.google.android.gms.auth.api.credentials.IdToken;
-import com.google.android.gms.auth.api.credentials.IdentityProviders;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +58,6 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
 
 
     private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
-
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {
             super.onActivityResult(requestCode, resultCode, intent);
@@ -100,9 +95,7 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getCredentials(final Promise promise) {
         this.sLPromise = promise;
-        CredentialsClient mCredentialsClient;
-        mCredentialsClient = Credentials.getClient(this.mContext);
-
+        CredentialsClient mCredentialsClient = Credentials.getClient(this.mContext);
         CredentialRequest mCredentialRequest = new CredentialRequest.Builder()
                 .setPasswordLoginSupported(true)
                 .build();
@@ -136,11 +129,11 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                                 sLPromise.reject("SmartLockModule", "The user must create an account or sign in manually.");
                                 return;
                             }
-                            Log.e("SmartLockModule", "nao foi para o elseif", e);
-                            // resolveResult(rae, RC_READ, activity);
+
+                            resolveResult(rae, RC_READ, activity);
                         } else if (e instanceof ApiException) {
                             // The user must create an account or sign in manually.
-                            Log.e("SmartLockModule", "Unsuccessful credential request.", e);
+                            Log.e("SmartLockModule", "Unsuccessful credential request." + e.getMessage());
                             System.out.println("The user must create an account or sign in manually.");
 
                             ApiException ae = (ApiException) e;
@@ -186,10 +179,24 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void saveCredentials(final String name, final String userIdentifier, final String password, final String profilePicture, final Promise promise) {
+    public void saveCredentials(
+      final String name,
+      final String userIdentifier,
+      final String password,
+      final String profilePicture,
+      final Boolean forceEnableSaveDialog,
+      final Promise promise
+    ) {
         this.sLPromise = promise;
-        CredentialsClient mCredentialsClient;
-        mCredentialsClient = Credentials.getClient(this.mContext);
+
+        CredentialsOptions options = new CredentialsOptions.Builder()
+          .forceEnableSaveDialog()
+          .build();
+
+        CredentialsClient mCredentialsClient = forceEnableSaveDialog
+          ? Credentials.getClient(this.mContext, options)
+          : Credentials.getClient(this.mContext);
+
         Credential.Builder credentialBuilder = new Credential.Builder(userIdentifier)
                     .setName(name)
                     .setPassword(password);
@@ -207,12 +214,15 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                     sLPromise.resolve("Credential saved");
                     return;
                 }
+
                 Exception e = task.getException();
+
                 if (e instanceof ResolvableApiException) {
                     // Try to resolve the save request. This will prompt the user if
                     // the credential is new.
                     ResolvableApiException rae = (ResolvableApiException) e;
                     Activity activity = getCurrentActivity();
+
                     if (activity == null) {
                         sLPromise.reject("Activity is null", "Activity is null");
                         return;
@@ -224,9 +234,9 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
                         Log.e("SmartLockModule", "Failed to send Credentials intent.", ex);
                         sLPromise.reject("Failed to send Credentials intent.", "Failed to send Credentials intent.");
                     }
-                }else{
-                        Log.d("SmartLockModule", "Unsuccessful credential save.");
-                        sLPromise.reject("Unsuccessful credential save.", "Unsuccessful credential save.");
+                } else {
+                    Log.e("SmartLockModule", "Unsuccessful credential save.", e);
+                    sLPromise.reject("Unsuccessful credential save.", "Unsuccessful credential save.");
                 }
             }
         });

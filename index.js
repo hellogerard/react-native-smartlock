@@ -2,23 +2,28 @@ import { NativeModules } from 'react-native';
 
 const { SmartLockRN } = NativeModules;
 
-const smartLock = {};
+const smartLock = {
+  getCredentials () {
+    return SmartLockRN.getCredentials()
+      .then(JSON.parse)
+  },
+  saveCredentials (options) {
+    const {
+      name,
+      password,
+      userIdentifier,
+      profilePicture = null,
+      forceEnableSaveDialog = false
+    } = options
 
-smartLock.getCredentials = () => {
-  return new Promise((resolve, reject) => {
-    SmartLockRN.getCredentials()
-      .then(data => resolve(JSON.parse(data)))
-      .catch(err => reject(err));
-  });
-}
-
-smartLock.saveCredentials = (name, userIdentifier, password, profilePicture = null) => {
-  return new Promise((resolve, reject) => {
-    SmartLockRN.saveCredentials(name, userIdentifier, password, profilePicture)
-      .then(() => resolve())
-      .catch(err => reject(err));
-  });
-}
-
+    return SmartLockRN.saveCredentials(
+      name,
+      userIdentifier,
+      password,
+      profilePicture,
+      forceEnableSaveDialog
+    )
+  }
+};
 
 export default smartLock;
