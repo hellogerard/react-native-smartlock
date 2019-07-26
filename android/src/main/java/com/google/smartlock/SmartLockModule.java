@@ -36,7 +36,6 @@ import java.util.List;
 public class SmartLockModule extends ReactContextBaseJavaModule {
 
     private ReactApplicationContext mContext;
-    private Application application;
     private Promise sLPromise;
     private static final int RC_READ = 4;
     private static final int SUCCESS_CODE = -1;
@@ -45,10 +44,9 @@ public class SmartLockModule extends ReactContextBaseJavaModule {
     private static final int SIGN_IN_REQUIRED = 4;
 
 
-    public SmartLockModule(ReactApplicationContext reactContext, Application application) {
+    public SmartLockModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.mContext = reactContext;
-        this.application = application;
     }
 
     @Override

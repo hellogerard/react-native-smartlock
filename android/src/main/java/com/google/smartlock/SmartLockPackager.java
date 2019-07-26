@@ -15,15 +15,11 @@ import java.util.List;
 
 public class SmartLockPackager implements ReactPackage {
 
-    private Application application;
-
-    public SmartLockPackager(Application application) {
-        this.application = application;
-    }
+    public SmartLockPackager() {}
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(new SmartLockModule(reactContext, this.application));
+        return Arrays.<NativeModule>asList(new SmartLockModule(reactContext));
     }
 
 
